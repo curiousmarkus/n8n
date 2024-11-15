@@ -405,7 +405,6 @@ export class SeaTable implements INodeType {
 				  }
 
 				for (let i = 0; i < items.length; i++) {
-					// const rowId = this.getNodeParameter('rowId', i) as string;
 					rowInput = {} as IRowObject;
 					try {
 						if (fieldsToSend === 'autoMapInputData') {
@@ -428,62 +427,65 @@ export class SeaTable implements INodeType {
 							}
 						}
 
-						let rowsToUpdate: {rowId: string, row: IRowObject}[] = [];
+						let rowsToUpdate: {rowId: string, data: IRowObject}[] = [];
 
 						if (matchingColumns.length > 0) {
-							// Find matching rows
-							rowsToUpdate = existingRows.filter(row => 
-							  matchingColumns.every(col => row[col] === rowInput[col])
-							).map(row => ({
-							  rowId: row._id,
-							  data: rowInput
-							}));
+							rowsToUpdate = existingRows
+							  .filter(row => matchingColumns.every(col => row[col] === rowInput[col]))
+							  .map(row => ({
+								rowId: row._id,
+								data: rowInput
+							  }));
 					
 							if (rowsToUpdate.length === 0) {
-							  throw new NodeOperationError(this.getNode(), 
-								`No matching rows found for the specified criteria`, { itemIndex: i });
+							  throw new NodeOperationError(
+								this.getNode(),
+								`No matching rows found for the specified criteria`,
+								{ itemIndex: i }
+							  );
 							}
 						  } else {
-							// Direct row ID update
 							const rowId = this.getNodeParameter('rowId', i) as string;
 							rowsToUpdate = [{rowId, data: rowInput}];
 						  }
 
 						for (const {rowId, data} of rowsToUpdate) {
 							body.row = rowExport(data, updateAble(tableColumns));
-							// body.row = rowExport(rowInput, updateAble(tableColumns));
-						body.table_name = tableName;
-						body.row_id = rowId;
-						responseData = await seaTableApiRequest.call(
-							this,
-							ctx,
-							'PUT',
-							'/dtable-server/api/v1/dtables/{{dtable_uuid}}/rows/',
-							body,
-						);
+							body.table_name = tableName;
+							body.row_id = rowId;
 
-						const executionData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray({ _id: rowId, ...(responseData as IDataObject) }),
-							{ itemData: { item: i } },
-						);
-
-						returnData.push(...executionData);
-					} catch (error) {
-						if (this.continueOnFail()) {
+							responseData = await seaTableApiRequest.call(
+							  this,
+							  ctx,
+							  'PUT',
+							  '/dtable-server/api/v1/dtables/{{dtable_uuid}}/rows/',
+							  body,
+							);
+					
+							const executionData = this.helpers.constructExecutionMetaData(
+							  this.helpers.returnJsonArray({ _id: rowId, ...(responseData as IDataObject) }),
+							  { itemData: { item: i } },
+							);
+					
+							returnData.push(...executionData);
+						  }
+						} catch (error) {
+						  if (this.continueOnFail()) {
 							const executionErrorData = this.helpers.constructExecutionMetaData(
-								this.helpers.returnJsonArray({ error: error.message }),
-								{ itemData: { item: i } },
+							  this.helpers.returnJsonArray({ error: error.message }),
+							  { itemData: { item: i } },
 							);
 							returnData.push(...executionErrorData);
 							continue;
+						  }
+						  throw error;
 						}
-						throw error;
+					  }
+					} else {
+					  throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
 					}
+				  }
+				  return [returnData];
 				}
-			} else {
-				throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
+			  }
 			}
-		}
-		return [returnData];
-	}
-}
