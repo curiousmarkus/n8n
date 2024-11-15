@@ -82,3 +82,10 @@ export type TColumnsUiValues = Array<{
 	columnName: string;
 	columnValue: string;
 }>;
+
+export type TMatchingColumns = string[];
+
+export type TUpdateOperation = {
+  rowId: string;
+  data: IRowObject;
+};

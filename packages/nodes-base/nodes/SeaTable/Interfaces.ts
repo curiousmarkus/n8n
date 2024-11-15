@@ -99,3 +99,14 @@ export interface IRowResponse {
 	];
 	results: IRow[];
 }
+
+export interface IUpdateMatchCriteria {
+  matchingColumns: TMatchingColumns;
+  rowData: IRowObject;
+}
+
+export interface IUpdateResult {
+  success: boolean;
+  rowId: string;
+  error?: string;
+}
