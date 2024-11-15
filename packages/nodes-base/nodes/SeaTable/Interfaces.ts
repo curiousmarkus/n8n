@@ -5,6 +5,7 @@ import type {
 	TDtableMetadataTables,
 	TSeaTableServerEdition,
 	TSeaTableServerVersion,
+	TMatchingColumns, 
 } from './types';
 
 export interface IApi {
