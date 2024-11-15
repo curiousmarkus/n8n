@@ -99,6 +99,22 @@ export const rowFields: INodeProperties[] = [
 		},
 		default: '',
 	},
+	{
+		displayName: 'Matching Columns',
+		name: 'matchingColumns',
+		type: 'multiOptions',
+		displayOptions: {
+		  show: {
+			operation: ['update'],
+			resource: ['row'],
+		  },
+		},
+		typeOptions: {
+		  loadOptionsMethod: 'getAllSortableColumns',
+		},
+		default: [],
+		description: 'Columns to match existing rows on. If empty, will match on row ID.',
+	  },
 
 	// ----------------------------------
 	//             create
