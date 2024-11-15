@@ -376,10 +376,6 @@ export class SeaTable implements INodeType {
 					}
 				}
 			} else if (operation === 'update') {
-				// ----------------------------------
-				//         row:update
-				// ----------------------------------
-
 				const tableName = this.getNodeParameter('tableName', 0) as string;
 				const tableColumns = await getTableColumns.call(this, tableName);
 				const matchingColumns = this.getNodeParameter('matchingColumns', 0, []) as string[];
@@ -488,4 +484,4 @@ export class SeaTable implements INodeType {
 				  return [returnData];
 				}
 			  }
-			}
+			
