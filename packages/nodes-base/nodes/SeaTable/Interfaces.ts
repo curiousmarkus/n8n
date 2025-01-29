@@ -102,7 +102,7 @@ export interface IRowResponse {
 }
 
 export interface IUpdateMatchCriteria {
-	matchingColumns: MatchingColumns;
+	matchingColumns: TMatchingColumns;
 	rowData: IRowObject;
 }
 

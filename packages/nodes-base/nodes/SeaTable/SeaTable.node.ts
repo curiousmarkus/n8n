@@ -388,7 +388,7 @@ export class SeaTable implements INodeType {
 					| 'autoMapInputData';
 				let rowInput: IRowObject = {};
 
-				let existingRow: IRow[] = [];
+				let existingRows: IRow[] = [];
 				if (matchingColumns.length > 0) {
 					existingRows = await setableApiRequestAllItems.call(
 						this,
@@ -427,8 +427,8 @@ export class SeaTable implements INodeType {
 
 						if (matchingColumns.length > 0) {
 							rowsToUpdate = existingRows
-								.filter((row) => matchingColumns.every(col => row[col] === rowInput[col]))
-								.map(row => ({
+								.filter((row: IRow) => matchingColumns.every(col => row[col] === rowInput[col]))
+								.map((row: IRow) => ({
 									rowId: row._id,
 									data: rowInput,
 								}));
