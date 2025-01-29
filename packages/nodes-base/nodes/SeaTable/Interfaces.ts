@@ -5,6 +5,7 @@ import type {
 	TDtableMetadataTables,
 	TSeaTableServerEdition,
 	TSeaTableServerVersion,
+	TMatchingColumns,
 } from './types';
 
 export interface IApi {
@@ -98,4 +99,15 @@ export interface IRowResponse {
 		},
 	];
 	results: IRow[];
+}
+
+export interface IUpdateMatchCriteria {
+	matchingColumns: MatchingColumns;
+	rowData: IRowObject;
+}
+
+export interface IUpdateResult {
+success: boolean;
+rowId: string;
+error?: string;
 }

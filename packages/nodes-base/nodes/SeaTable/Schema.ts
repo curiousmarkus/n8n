@@ -47,3 +47,8 @@ export const schema = {
 	columnTypes: { [key in TColumnType]: string };
 	nonUpdateAbleColumnTypes: { [key in ColumnType]: ColumnType };
 };
+
+export const updateValidation = {
+	maxMatchingColumns: 10, // Maximum number of columns that can be used for matching
+	requiredMatchTypes: ['text', 'number', 'email', 'single-select'] as TColumnType[], // Column types that can be used for matching
+} as const;

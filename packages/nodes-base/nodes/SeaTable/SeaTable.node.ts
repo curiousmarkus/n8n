@@ -379,6 +379,7 @@ export class SeaTable implements INodeType {
 
 				const tableName = this.getNodeParameter('tableName', 0) as string;
 				const tableColumns = await getTableColumns.call(this, tableName);
+				const matchingColumns = this.getNodeParameter('matchingColumns', 0, []) as string[];
 
 				body.table_name = tableName;
 
@@ -387,8 +388,19 @@ export class SeaTable implements INodeType {
 					| 'autoMapInputData';
 				let rowInput: IRowObject = {};
 
+				let existingRow: IRow[] = [];
+				if (matchingColumns.length > 0) {
+					existingRows = await setableApiRequestAllItems.call(
+						this,
+						ctx,
+						'rows',
+						'GET',
+						'/dtable-server/api/v1/dtables/{{dtable_uuid}}/rows/',
+						{ table_name: tableName },
+					); 
+				}
+
 				for (let i = 0; i < items.length; i++) {
-					const rowId = this.getNodeParameter('rowId', i) as string;
 					rowInput = {} as IRowObject;
 					try {
 						if (fieldsToSend === 'autoMapInputData') {
@@ -410,25 +422,51 @@ export class SeaTable implements INodeType {
 								rowInput[column.columnName] = column.columnValue;
 							}
 						}
-						body.row = rowExport(rowInput, updateAble(tableColumns));
-						body.table_name = tableName;
-						body.row_id = rowId;
-						responseData = await seaTableApiRequest.call(
-							this,
-							ctx,
-							'PUT',
-							'/dtable-server/api/v1/dtables/{{dtable_uuid}}/rows/',
-							body,
-						);
+						
+						let rowsToUpdate: {rowId: string, data: IRowObject}[] = [];
 
-						const executionData = this.helpers.constructExecutionMetaData(
-							this.helpers.returnJsonArray({ _id: rowId, ...(responseData as IDataObject) }),
-							{ itemData: { item: i } },
-						);
+						if (matchingColumns.length > 0) {
+							rowsToUpdate = existingRows
+								.filter((row) => matchingColumns.every(col => row[col] === rowInput[col]))
+								.map(row => ({
+									rowId: row._id,
+									data: rowInput,
+								}));
 
-						returnData.push(...executionData);
+							if (rowsToUpdate.length === 0) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'No matching rows found for the specified criteria.',
+									{ itemIndex: i },
+								);
+							}
+							} else {
+								const rowId = this.getNodeParameter('rowId', i) as string;
+								rowsToUpdate = [{ rowId, data: rowInput }];
+							}
+						
+						for (const { rowId, data } of rowsToUpdate) {
+							body.row = rowExport(data, updateAble(tableColumns));
+							body.table_name = tableName;
+							body.row_id = rowId;
+
+							responseData = await seaTableApiRequest.call(
+								this,
+								ctx,
+								'PUT',
+								'/dtable-server/api/v1/dtables/{{dtable_uuid}}/rows/',
+								body,
+							);
+
+							const executionData = this.helpers.constructExecutionMetaData(
+								this.helpers.returnJsonArray({ _id: rowId, ...(responseData as IDataObject) }),
+								{ itemData: { item: i } },
+							);
+
+							returnData.push(...executionData);
+						}
 					} catch (error) {
-						if (this.continueOnFail()) {
+						if (this.continueOnFail()) {	
 							const executionErrorData = this.helpers.constructExecutionMetaData(
 								this.helpers.returnJsonArray({ error: error.message }),
 								{ itemData: { item: i } },

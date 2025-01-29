@@ -11,7 +11,7 @@ export type TSeaTableServerEdition = 'enterprise edition';
 
 import type { ICredentialDataDecryptedObject } from 'n8n-workflow';
 
-import type { IDtableMetadataColumn, IDtableMetadataTable, TDtableViewColumn } from './Interfaces';
+import type { IDtableMetadataColumn, IDtableMetadataTable, TDtableViewColumn, IRowObject } from './Interfaces';
 
 export type TInheritColumnTypeTime = 'ctime' | 'mtime';
 export type TInheritColumnTypeUser = 'creator' | 'last-modifier';
@@ -83,3 +83,10 @@ export type TColumnsUiValues = Array<{
 	columnName: string;
 	columnValue: string;
 }>;
+
+export type TMatchingColumns = string[];
+
+export type TUpdateOperaion = {
+	rowId: string;
+	data: IRowObject;
+};
